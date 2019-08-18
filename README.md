@@ -3,7 +3,7 @@
 **file2img** is a small utility that can interpret any binary file as image data, in a variety of pixel formats. It's useful for looking at file contents in a visual manner, and for extracting usable images from arcane formats.
 
 
-###Options:
+### Options:
 
 ```
 -F,--list-formats    Print a list of available formats
@@ -17,7 +17,7 @@
 -S,--palette-start   Specify the palette start offset (default: 0)
 ```
 
-###Example Usage:
+### Example Usage:
 
 ```
 # DXT5-compressed image:
@@ -27,7 +27,7 @@ file2img -s 128 -n $((0x10000)) -f dxt5 input.dds
 file2img -s $((0x200)) -n 1024 -w 32 -f A8 -p XBGR1555LE -S 0 something.bin
 ```
 
-###Supported pixel formats:
+### Supported pixel formats:
 
 * A1<sup>†</sup> (1-bit gray format)
 * A2<sup>†</sup> (2-bit gray format)
@@ -54,8 +54,8 @@ file2img -s $((0x200)) -n 1024 -w 32 -f A8 -p XBGR1555LE -S 0 something.bin
 * DXT5<sup>‡</sup>
 * ETC1<sup>‡</sup>
 * PVRTC 4bpp RGB<sup>‡</sup>
-* Game Boy<sup>†‡</sup> (Game Boy compressed tile format, grayscale)
-* NES<sup>†‡</sup> (NES compressed tile format, grayscale)
+* Game Boy<sup>†‡</sup> (Game Boy compressed tile format, grayscale)
+* NES<sup>†‡</sup> (NES compressed tile format, grayscale)
 
 \*: This supports big-endian and little-endian encodings with BE/LE suffixes.  
 <sup>†</sup>: This is a grayscale format that can be used as an index map for a palette.  
