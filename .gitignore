@@ -1,0 +1,5 @@
+.vscode/
+buck-out/
+.buckd/
+.DS_Store
+file2img
