@@ -86,8 +86,7 @@ void FormatHandlerDXT5::process(const uint8_t* src, int srcLength, uint8_t* dst,
 		uint8_t a1 = readU8(&src);
 		uint64_t alphaIndexTable = 0;
 		for (int i = 0; i < 6; ++i) {
-			alphaIndexTable <<= 8;
-			alphaIndexTable |= readU8(&src);
+			alphaIndexTable |= (uint64_t)readU8(&src) << (i*8);
 		}
 		
 		uint16_t c0 = readU16LE(&src);
