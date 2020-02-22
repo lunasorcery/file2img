@@ -31,7 +31,7 @@ file2img -s $((0x200)) -n 1024 -w 32 -f A8 -p XBGR1555LE -S 0 something.bin
 
 * A1<sup>†</sup> (1-bit gray format)
 * A2<sup>†</sup> (2-bit gray format)
-* A4<sup>†</sup> (4-bit gray format)
+* A4<sup>†</sup>\* (4-bit gray format)
 * A8<sup>†</sup> (8-bit gray format)
 * ARGB8888
 * ABGR8888
