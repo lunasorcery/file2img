@@ -19,8 +19,10 @@ std::string getNameFromFormat(eFormat format)
 {
 	switch (format)
 	{
-		case eFormat::A1: return "A1";
-		case eFormat::A2: return "A2";
+		case eFormat::A1BE: return "A1BE";
+		case eFormat::A1LE: return "A1LE";
+		case eFormat::A2BE: return "A2BE";
+		case eFormat::A2LE: return "A2LE";
 		case eFormat::A4BE: return "A4BE";
 		case eFormat::A4LE: return "A4LE";
 		case eFormat::A8: return "A8";
@@ -82,10 +84,12 @@ std::shared_ptr<FormatHandler> createFormatHandler(eFormat format)
 {
 	switch (format)
 	{
-		case eFormat::A1:         return std::make_shared<FormatHandlerA1>();
+		case eFormat::A1BE:         return std::make_shared<FormatHandlerA1BE>();
+		case eFormat::A1LE:         return std::make_shared<FormatHandlerA1LE>();
+		case eFormat::A2BE:         return std::make_shared<FormatHandlerA2BE>();
+		case eFormat::A2LE:         return std::make_shared<FormatHandlerA2LE>();
 		case eFormat::A4BE:       return std::make_shared<FormatHandlerA4BE>();
 		case eFormat::A4LE:       return std::make_shared<FormatHandlerA4LE>();
-		case eFormat::A2:         return std::make_shared<FormatHandlerA2>();
 		case eFormat::A8:         return std::make_shared<FormatHandlerA8>();
 
 		case eFormat::ARGB8888:   return std::make_shared<FormatHandlerARGB8888>();
