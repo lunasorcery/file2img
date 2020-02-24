@@ -44,12 +44,12 @@ HEADERS = \
 	Formats.h \
 	stb/stb_image_write.h
 
-CC ?= clang
+CXX ?= clang
 
 all: file2img
 
 file2img: $(FILES) $(HEADERS)
-	$(CC) $(FILES) -std=gnu++11 -lstdc++ -o file2img -Wall -Wextra -Werror -std=c++17 -O3
+	$(CXX) $(FILES) -std=gnu++11 -lstdc++ -o file2img -Wall -Wextra -Werror -std=c++17 -O3
 
 install: file2img
 	cp file2img /usr/local/bin/file2img
