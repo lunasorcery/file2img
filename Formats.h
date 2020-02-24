@@ -5,9 +5,12 @@
 
 enum class eFormat {
 	INVALID = -1,
-	A1,
-	A2,
-	A4,
+	A1BE,
+	A1LE,
+	A2BE,
+	A2LE,
+	A4BE,
+	A4LE,
 	A8,
 	ARGB8888,
 	ABGR8888,
