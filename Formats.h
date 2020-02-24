@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 #include "FormatHandler.h"
 
 enum class eFormat {

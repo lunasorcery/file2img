@@ -2,7 +2,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <cstring>
 
 void FormatHandlerA8::process(const uint8_t* src, int srcLength, uint8_t* dst, int width) const {
 	(void)width;

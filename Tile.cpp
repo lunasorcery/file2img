@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <cstring>
 #include "Tile.h"
 
 void Tile::process(uint8_t* buffer, int comp, int width, int height, int tileWidth, int tileHeight) {
