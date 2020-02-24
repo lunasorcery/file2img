@@ -1,6 +1,6 @@
 #include "FormatHandler.h"
 
-#include <string>
+#include <cstring>
 
 uint8_t FormatHandler::readU8(const uint8_t** src) {
 	uint8_t buf = **src;

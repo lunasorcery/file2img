@@ -1,4 +1,4 @@
-#include <string>
+#include <cstring>
 #include "FormatHandlerNES.h"
 
 void FormatHandlerNES::process(const uint8_t* src, int srcLength, uint8_t* dst, int width) const {
