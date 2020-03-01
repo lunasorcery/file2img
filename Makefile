@@ -15,6 +15,7 @@ FILES = \
 	FormatHandlerETC1.cpp \
 	FormatHandlerGameboy.cpp \
 	FormatHandlerNES.cpp \
+	FormatHandlerSNES.cpp \
 	FormatHandlerLinearGeneric.cpp \
 	FormatHandlerPVRTC.cpp \
 	Tile.cpp \
@@ -37,6 +38,7 @@ HEADERS = \
 	FormatHandlerETC1.h \
 	FormatHandlerGameboy.h \
 	FormatHandlerNES.h \
+	FormatHandlerSNES.h \
 	FormatHandlerLinearGeneric.h \
 	FormatHandlerPVRTC.h \
 	Tile.h \

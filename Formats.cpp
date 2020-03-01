@@ -13,6 +13,7 @@
 #include "FormatHandlerETC1.h"
 #include "FormatHandlerGameboy.h"
 #include "FormatHandlerNES.h"
+#include "FormatHandlerSNES.h"
 #include "FormatHandlerPVRTC.h"
 
 std::string getNameFromFormat(eFormat format)
@@ -56,6 +57,7 @@ std::string getNameFromFormat(eFormat format)
 		case eFormat::pvrtc_4bpp_rgb: return "pvrtc-4bpp-rgb";
 		case eFormat::gameboy: return "gameboy";
 		case eFormat::nes: return "nes";
+		case eFormat::snes4bit: return "snes4bit";
 
 		case eFormat::INVALID:
 			[[fallthrough]];
@@ -132,6 +134,7 @@ std::shared_ptr<FormatHandler> createFormatHandler(eFormat format)
 
 		case eFormat::gameboy:    return std::make_shared<FormatHandlerGameboy>();
 		case eFormat::nes:        return std::make_shared<FormatHandlerNES>();
+		case eFormat::snes4bit:   return std::make_shared<FormatHandlerSNES4bpp>();
 
 
 		case eFormat::INVALID:

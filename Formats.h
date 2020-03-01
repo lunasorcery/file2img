@@ -42,6 +42,7 @@ enum class eFormat {
 	pvrtc_4bpp_rgb,
 	gameboy,
 	nes,
+	snes4bit,
 	COUNT
 };
 
