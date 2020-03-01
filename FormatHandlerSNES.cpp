@@ -1,4 +1,5 @@
 #include "FormatHandlerSNES.h"
+#include <cstring>
 
 void FormatHandlerSNES4bpp::process(const uint8_t* src, int srcLength, uint8_t* dst, int width) const {
 	int blockCount = srcLength / 32;
