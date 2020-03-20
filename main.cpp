@@ -21,6 +21,7 @@ const char* g_outputPath = nullptr;
 int g_start = 0;
 int g_paletteStart = 0;
 int g_length = -1;
+bool g_paletteZeroIsTransparent = false;
 
 int g_argc;
 char** g_argv;
@@ -37,11 +38,12 @@ void parseCommandLine() {
 			{ "length",  required_argument, 0, 'n' },
 			{ "palette-format", required_argument, 0, 'p' },
 			{ "palette-start",  required_argument, 0, 'S' },
+			{ "palette-zero-transparent",  no_argument, 0, 'z' },
 			{ 0, 0, 0, 0 }
 		};
 
 		int option_index = 0;
-		int c = getopt_long(g_argc, g_argv, "f:Ft:w:o:s:n:p:S:", long_options, &option_index);
+		int c = getopt_long(g_argc, g_argv, "f:Ft:w:o:s:n:p:S:z", long_options, &option_index);
 		
 		if (c == -1) {
 			break;
@@ -124,6 +126,10 @@ void parseCommandLine() {
 				}
 				exit(0);
 			}
+			case 'z': {
+				g_paletteZeroIsTransparent = true;
+				break;
+			}
 		}
 	}
 }
@@ -140,6 +146,7 @@ void earlySanityCheck() {
 		puts("   -n,--length         Specify the input byte count (default: all of them)");
 		puts("   -p,--palette-format Specify the palette format (default: none)");
 		puts("   -S,--palette-start  Specify the palette start offset (default: 0)");
+		puts("   -z,--palette-zero-transparent  Force palette index zero to be transparent");
 		exit(0);
 	}
 	if (g_outputPath != nullptr && optind + 1 < g_argc) {
@@ -275,12 +282,18 @@ void processInputFile(const char* infile)
 				for (int x = 0; x < width; ++x)
 				{
 					int index = dstBuffer[y*width*dstComp + x*dstComp];
-					paletteHandler->process(
-						paletteSrcBuffer + (index*paletteStride),
-						paletteStride,
-						dstBuffer2 + y*width*paletteComp + x*paletteComp,
-						1
-					);
+					if (index == 0 && g_paletteZeroIsTransparent) {
+						for (int i = 0; i < paletteComp; ++i) {
+							dstBuffer2[y*width*paletteComp + x*paletteComp + i] = 0;
+						}
+					} else {
+						paletteHandler->process(
+							paletteSrcBuffer + (index*paletteStride),
+							paletteStride,
+							dstBuffer2 + y*width*paletteComp + x*paletteComp,
+							1
+						);
+					}
 				}
 			}
 
