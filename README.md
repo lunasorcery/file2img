@@ -21,19 +21,19 @@ file2img [options] <input file>
 
 ### Example Usage:
 
-Basic usage, outputs a 256-pixel-wide image mapping each input byte as one pixel:
+Basic usage, generates a 256-pixel-wide image mapping each input byte as one pixel, and saves it to the default output path `out.png`:
 
 ```
 file2img input.bin
 ```
 
-Dumping a DXT5-compressed texture, with 65536 bytes of pixel data, starting at 128 bytes into the file, and saving it to `output.png`.
+Dumping a DXT5-compressed texture, with 65536 bytes of pixel data, starting at 128 bytes into the file, and saving it to `output.png`:
 
 ```
 file2img -f dxt5 -n 65536 -s 128 input.dds -o output.png
 ```
 
-Dumping a 32-pixel-wide paletted image, with a 1024-byte-long 8-bit index map at offset 0x200, and a little-endian XBGR1555 palette at offset 0x0.  
+Dumping a 32-pixel-wide paletted image, with a 1024-byte-long 8-bit index map at offset 0x200, and a little-endian XBGR1555 palette at offset 0x0:  
 _Note: when dumping indexed/paletted images, `-f` specifies the color format of the palette, but `-s` specifies the start of the index map._
 
 ```
