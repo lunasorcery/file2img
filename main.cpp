@@ -314,45 +314,43 @@ void applyTileLayout(rgba8888_t* buffer, int width, int height, int tileWidth, i
 	delete[] scratch;
 }
 
-void processInputFile(const char* infile)
+void processInputFile(char const* inputFilePath)
 {
-	FILE* fh = fopen(infile, "rb");
+	FILE* fh = fopen(inputFilePath, "rb");
 	{
 		if (!fh) {
-			printf("Failed to open file %s\n", infile);
+			printf("Failed to open %s\n", inputFilePath);
 			return;
 		}
 
-		fseek(fh, 0, SEEK_END);
-		size_t fileLength = ftell(fh);
-		fseek(fh, 0, SEEK_SET);
-
 		int srcLength = g_length;
+
 		if (srcLength < 0) {
-			// auto-detect data length
-			srcLength = fileLength - g_start;
+			// attempt to determine file length.
+			// this will fail for things like /dev/random.
+			fseek(fh, 0, SEEK_END);
+			size_t const fileLength = ftell(fh);
+			fseek(fh, 0, SEEK_SET);
+			
+			if (fileLength == 0) {
+				printf("Failed to automatically determine length of '%s', or it's an empty file.\n", inputFilePath);
+				printf("If this is some unbounded device like /dev/random, please specify an explicit length with -n\n");
+				exit(1);
+			}
+
+			srcLength = (fileLength - g_start);
 		}
 
-		// start is greater than file length or file is empty
-		if (srcLength <= 0) {
-			printf("No data available!\n");
-			exit(1);
-		}
-
-		if ((size_t)(g_start) >= fileLength) {
-			printf("Requested start offest is beyond the end of the available data.\n");
-			exit(1);
-		}
-
-		if ((size_t)(g_start + srcLength) > fileLength) {
-			printf("Requested more data than is available.\n");
-			exit(1);
+		if (g_start != 0) {
+			fseek(fh, g_start, SEEK_SET);
 		}
 
 		uint8_t* srcBuffer = new uint8_t[srcLength];
-		if (srcLength > 0) {
-			fseek(fh, g_start, SEEK_SET);
-			fread(srcBuffer, 1, srcLength, fh);
+
+		size_t const totalBytesRead = fread(srcBuffer, 1, srcLength, fh);
+		if (totalBytesRead < (size_t)srcLength) {
+			printf("Failed to read requested %d bytes, only %lu bytes were available.\n", srcLength, totalBytesRead);
+			exit(1);
 		}
 
 		int const pixelCount = calculatePixelCount(srcLength, g_colorFormat, g_indexFormat, g_blockFormat);
