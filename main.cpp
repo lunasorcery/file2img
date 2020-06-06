@@ -246,16 +246,19 @@ void parseCommandLine() {
 
 void earlySanityCheck() {
 	if (optind >= g_argc) {
+		puts("Usage:");
+		puts("   file2img [options] <input file>");
+		puts("");
 		puts("Options:");
-		puts("   -F,--list-formats   Print a list of available formats");
-		puts("   -f,--format         Specify the pixel format (default: A8)");
-		puts("   -t,--tile           Specify the tile size (default: 1/disabled)");
-		puts("   -w,--width          Specify the target width (default: 256)");
-		puts("   -o,--output         Specify the output path (default: out.png)");
-		puts("   -s,--start          Specify the start offset (default: 0)");
-		puts("   -n,--length         Specify the input byte count (default: all of them)");
-		puts("   -p,--palette-format Specify the palette format (default: none)");
-		puts("   -S,--palette-start  Specify the palette start offset (default: 0)");
+		puts("   -F,--list-formats    Print a list of available formats");
+		puts("   -f,--format          Specify the color format (default: L8)");
+		puts("   -t,--tile            Specify the tile size (default: 1/disabled)");
+		puts("   -w,--width           Specify the target width (default: 256)");
+		puts("   -o,--output          Specify the output path (default: out.png)");
+		puts("   -s,--start           Specify the start offset (default: 0)");
+		puts("   -n,--length          Specify the input byte count (default: all of them)");
+		puts("   -i,--index-format    Specify the index map format (default: none)");
+		puts("   -p,--palette-start   Specify the palette start offset (default: 0)");
 		exit(0);
 	}
 	if (g_outputPath != nullptr && optind + 1 < g_argc) {
