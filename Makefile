@@ -19,7 +19,7 @@ CXX ?= clang
 all: file2img
 
 file2img: $(SOURCES) $(HEADERS)
-	$(CXX) $(SOURCES) -std=c++17 -lstdc++ -o file2img -Wall -Wextra -O3
+	$(CXX) $(SOURCES) -std=c++2a -lstdc++ -o file2img -Wall -Wextra -O3
 
 install: file2img
 	cp file2img /usr/local/bin/file2img
