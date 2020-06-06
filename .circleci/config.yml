@@ -12,6 +12,8 @@ jobs:
       - image: gcc:8.2
     steps:
       - checkout
+      - run: git submodule init
+      - run: git submodule update --remote
       - run: make
       - run: ls -la
       - run: ./file2img
