@@ -284,7 +284,7 @@ int calculatePixelCount(int numSrcBytes, color_format_t const* colorFormat, inde
 
 void applyTileLayout(rgba8888_t* buffer, int width, int height, int tileWidth, int tileHeight) {
 	if ((width % tileWidth) != 0) {
-    eprintf("Chosen layout must have a width divisible by %d.\n", tileWidth);
+		eprintf("Chosen layout must have a width divisible by %d.\n", tileWidth);
 		exit(1);
 	}
 	if ((height % tileHeight) != 0) {
