@@ -164,7 +164,7 @@ void parseCommandLine() {
 				if (!g_colorFormat) {
 					g_blockFormat = findBlockFormat(formatName);
 					if (!g_blockFormat) {
-						printf("Unknown format specified: %s\n", formatName);
+						eprintf("Unknown format specified: %s\n", formatName);
 						exit(1);
 					}
 				}
@@ -174,7 +174,7 @@ void parseCommandLine() {
 				char const* formatName = optarg;
 				g_indexFormat = findIndexFormat(formatName);
 				if (!g_indexFormat) {
-					printf("Unknown index format specified: %s\n", formatName);
+					eprintf("Unknown index format specified: %s\n", formatName);
 					exit(1);
 				}
 				break;
@@ -183,7 +183,7 @@ void parseCommandLine() {
 				// TODO: find an elegant way to get separate width/height
 				g_tileHeight = g_tileWidth = strtol(optarg, nullptr, 10);
 				if (g_tileWidth <= 0) {
-					printf("Tile size must be greater than zero.\n");
+					eprintf("Tile size must be greater than zero.\n");
 					exit(1);
 				}
 				break;
@@ -191,7 +191,7 @@ void parseCommandLine() {
 			case 'w': {
 				g_width = strtol(optarg, nullptr, 10);
 				if (g_width <= 0) {
-					printf("Width must be greater than zero.\n");
+					eprintf("Width must be greater than zero.\n");
 					exit(1);
 				}
 				break;
@@ -203,7 +203,7 @@ void parseCommandLine() {
 			case 's': {
 				g_start = strtol(optarg, nullptr, 10);
 				if (g_start < 0) {
-					printf("Start offset must be greater than or equal to zero.\n");
+					eprintf("Start offset must be greater than or equal to zero.\n");
 					exit(1);
 				}
 				break;
@@ -211,7 +211,7 @@ void parseCommandLine() {
 			case 'p': {
 				g_paletteStart = strtol(optarg, nullptr, 10);
 				if (g_start < 0) {
-					printf("Palette start offset must be greater than or equal to zero.\n");
+					eprintf("Palette start offset must be greater than or equal to zero.\n");
 					exit(1);
 				}
 				break;
@@ -219,7 +219,7 @@ void parseCommandLine() {
 			case 'n': {
 				g_length = strtol(optarg, nullptr, 10);
 				if (g_length <= 0) {
-					printf("Length must be greater than zero.\n");
+					eprintf("Length must be greater than zero.\n");
 					exit(1);
 				}
 				break;
@@ -262,11 +262,11 @@ void earlySanityCheck() {
 		exit(0);
 	}
 	if (g_outputPath != nullptr && optind + 1 < g_argc) {
-		printf("Output path was specified along with multiple input files!\n");
+		eprintf("Output path was specified along with multiple input files!\n");
 		exit(1);
 	}
 	if (g_blockFormat && g_indexFormat) {
-		printf("Cannot use block format %s as a palette source.\n", g_blockFormat->id);
+		eprintf("Cannot use block format %s as a palette source.\n", g_blockFormat->id);
 		exit(1);
 	}
 }
@@ -284,11 +284,11 @@ int calculatePixelCount(int numSrcBytes, color_format_t const* colorFormat, inde
 
 void applyTileLayout(rgba8888_t* buffer, int width, int height, int tileWidth, int tileHeight) {
 	if ((width % tileWidth) != 0) {
-		printf("Chosen layout must have a width divisible by %d.\n", tileWidth);
+		eprintf("Chosen layout must have a width divisible by %d.\n", tileWidth);
 		exit(1);
 	}
 	if ((height % tileHeight) != 0) {
-		printf("Chosen layout must have a height divisible by %d.\n", tileHeight);
+		eprintf("Chosen layout must have a height divisible by %d.\n", tileHeight);
 		exit(1);
 	}
 
@@ -319,7 +319,7 @@ void processInputFile(char const* inputFilePath)
 	FILE* fh = fopen(inputFilePath, "rb");
 	{
 		if (!fh) {
-			printf("Failed to open %s\n", inputFilePath);
+			eprintf("Failed to open %s\n", inputFilePath);
 			return;
 		}
 
@@ -333,8 +333,8 @@ void processInputFile(char const* inputFilePath)
 			fseek(fh, 0, SEEK_SET);
 			
 			if (fileLength == 0) {
-				printf("Failed to automatically determine length of '%s', or it's an empty file.\n", inputFilePath);
-				printf("If this is some unbounded device like /dev/random, please specify an explicit length with -n\n");
+				eprintf("Failed to automatically determine length of '%s', or it's an empty file.\n", inputFilePath);
+				eprintf("If this is some unbounded device like /dev/random, please specify an explicit length with -n\n");
 				exit(1);
 			}
 
@@ -349,7 +349,7 @@ void processInputFile(char const* inputFilePath)
 
 		size_t const totalBytesRead = fread(srcBuffer, 1, srcLength, fh);
 		if (totalBytesRead < (size_t)srcLength) {
-			printf("Failed to read requested %d bytes, only %lu bytes were available.\n", srcLength, totalBytesRead);
+			eprintf("Failed to read requested %d bytes, only %lu bytes were available.\n", srcLength, totalBytesRead);
 			exit(1);
 		}
 
@@ -361,7 +361,7 @@ void processInputFile(char const* inputFilePath)
 		if (g_blockFormat) {
 			// ensure this width is valid
 			if ((width % g_blockFormat->width) != 0) {
-				printf("Requested block format %s requires a width divisible by %d.\n", g_blockFormat->id, g_blockFormat->width);
+				eprintf("Requested block format %s requires a width divisible by %d.\n", g_blockFormat->id, g_blockFormat->width);
 				exit(1);
 			}
 
@@ -372,12 +372,12 @@ void processInputFile(char const* inputFilePath)
 		// handle tile size
 		if (g_tileWidth != 1 || g_tileHeight != 1) {
 			if ((width % g_tileWidth) != 0) {
-				printf("Width %d is not divisible by tile size %d.\n", width, g_tileWidth);
+				eprintf("Width %d is not divisible by tile size %d.\n", width, g_tileWidth);
 				exit(1);
 			}
 			if ((height % g_tileHeight) != 0) {
 				if (g_blockFormat) {
-					printf("Format %s is not trivially compatible with tile height %d.\n", g_blockFormat->id, g_tileHeight);
+					eprintf("Format %s is not trivially compatible with tile height %d.\n", g_blockFormat->id, g_tileHeight);
 					exit(1);
 				} else {
 					height = alignToMultiple(height, g_tileHeight);
@@ -437,7 +437,7 @@ int main(int argc, char** argv) {
 	earlySanityCheck();
 
 	for (int i = optind; i < g_argc; ++i) {
-		printf("Processing file %s\n", g_argv[i]);
+		eprintf("Processing file %s\n", g_argv[i]);
 		processInputFile(g_argv[i]);
 	}
 
