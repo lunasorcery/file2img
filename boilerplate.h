@@ -2,6 +2,8 @@
 
 #define array_size(x) (sizeof(x)/sizeof(x[0]))
 
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+
 extern int strcmp(char const*, char const*);
 
 inline bool strEqual(char const* a, char const* b) {
