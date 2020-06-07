@@ -1,23 +1,132 @@
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <getopt.h>
-#include <string>
-#include <map>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
-#include "Formats.h"
-#include "Tile.h"
-#include "MathUtil.h"
+#include "types.h"
+#include "boilerplate.h"
+#include "colorFormatHandlers.h"
+#include "indexFormatHandlers.h"
+#include "blockFormatHandlers.h"
 
-eFormat g_format = eFormat::A8;
-eFormat g_paletteFormat = eFormat::INVALID;
+struct index_format_t {
+	char const* id;
+	int bit_depth;
+	void (*function)(int* dst, uint8_t const* src, int numBytes);
+	char const* description;
+};
+
+struct color_format_t {
+	char const* id;
+	int bit_depth;
+	void (*function)(rgba8888_t* dst, uint8_t const* src, int numBytes);
+	char const* description;
+};
+
+struct block_format_t {
+	char const* id;
+	int bit_depth;
+	int width;
+	int height;
+	void (*function)(rgba8888_t* dst, uint8_t const* src, int dstWidth, int numBytes);
+	char const* description;
+};
+
+
+color_format_t all_color_formats[] = {
+	{ .id="l1be",       .bit_depth= 1, .function=colorFormatHandlerL1BE,       .description="1-bit luminance format, big-endian (MSB first)", },
+	{ .id="l1le",       .bit_depth= 1, .function=colorFormatHandlerL1LE,       .description="1-bit luminance format, little-endian (LSB first)", },
+	{ .id="l2be",       .bit_depth= 2, .function=colorFormatHandlerL2BE,       .description="2-bit luminance format, big-endian (MSB first)", },
+	{ .id="l2le",       .bit_depth= 2, .function=colorFormatHandlerL2LE,       .description="2-bit luminance format, little-endian (LSB first)", },
+	{ .id="l4be",       .bit_depth= 4, .function=colorFormatHandlerL4BE,       .description="4-bit luminance format, big-endian (MSB first)", },
+	{ .id="l4le",       .bit_depth= 4, .function=colorFormatHandlerL4LE,       .description="4-bit luminance format, little-endian (LSB first)", },
+	{ .id="l8",         .bit_depth= 8, .function=colorFormatHandlerL8,         .description="8-bit luminance format", },
+
+	{ .id="rgb565be",   .bit_depth=16, .function=colorFormatHandlerRGB565BE,   .description="RGB565 format, big-endian    (RRRRRGGG GGGBBBBB)", },
+	{ .id="rgb565le",   .bit_depth=16, .function=colorFormatHandlerRGB565LE,   .description="RGB565 format, little-endian (GGGBBBBB RRRRRGGG)", },
+	{ .id="bgr565be",   .bit_depth=16, .function=colorFormatHandlerBGR565BE,   .description="BGR565 format, big-endian    (BBBBBGGG GGGRRRRR)", },
+	{ .id="bgr565le",   .bit_depth=16, .function=colorFormatHandlerBGR565LE,   .description="BGR565 format, little-endian (GGGRRRRR BBBBBGGG)", },
+	
+	{ .id="argb4444be", .bit_depth=16, .function=colorFormatHandlerARGB4444BE, .description="ARGB4444 format, big-endian    (AAAARRRR GGGGBBBB)", },
+	{ .id="argb4444le", .bit_depth=16, .function=colorFormatHandlerARGB4444LE, .description="ARGB4444 format, little-endian (GGGGBBBB AAAARRRR)", },
+
+	{ .id="argb1555be", .bit_depth=16, .function=colorFormatHandlerARGB1555BE, .description="ARGB1555 format, big-endian    (ARRRRRGG GGGBBBBB)", },
+	{ .id="argb1555le", .bit_depth=16, .function=colorFormatHandlerARGB1555LE, .description="ARGB1555 format, little-endian (GGGBBBBB ARRRRRGG)", },
+	{ .id="abgr1555be", .bit_depth=16, .function=colorFormatHandlerABGR1555BE, .description="ABGR1555 format, big-endian    (ABBBBBGG GGGRRRRR)", },
+	{ .id="abgr1555le", .bit_depth=16, .function=colorFormatHandlerABGR1555LE, .description="ABGR1555 format, little-endian (GGGRRRRR ABBBBBGG)", },
+	
+	{ .id="xrgb1555be", .bit_depth=16, .function=colorFormatHandlerXRGB1555BE, .description="XRGB1555 format, big-endian    (no alpha) (XRRRRRGG GGGBBBBB)", },
+	{ .id="xrgb1555le", .bit_depth=16, .function=colorFormatHandlerXRGB1555LE, .description="XRGB1555 format, little-endian (no alpha) (GGGBBBBB XRRRRRGG)", },
+	{ .id="xbgr1555be", .bit_depth=16, .function=colorFormatHandlerXBGR1555BE, .description="XBGR1555 format, big-endian    (no alpha) (XBBBBBGG GGGRRRRR)", },
+	{ .id="xbgr1555le", .bit_depth=16, .function=colorFormatHandlerXBGR1555LE, .description="XBGR1555 format, little-endian (no alpha) (GGGRRRRR XBBBBBGG)", },
+
+	{ .id="rgb888",     .bit_depth=24, .function=colorFormatHandlerRGB888,     .description="RGB888 format (RRRRRRRR GGGGGGGG BBBBBBBB)" },
+	{ .id="bgr888",     .bit_depth=24, .function=colorFormatHandlerBGR888,     .description="BGR888 format (BBBBBBBB GGGGGGGG RRRRRRRR)" },
+
+	{ .id="argb8888",   .bit_depth=32, .function=colorFormatHandlerARGB8888,   .description="ARGB8888 format (AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB)" },
+	{ .id="abgr8888",   .bit_depth=32, .function=colorFormatHandlerABGR8888,   .description="ABGR8888 format (AAAAAAAA BBBBBBBB GGGGGGGG RRRRRRRR)" },
+	{ .id="rgba8888",   .bit_depth=32, .function=colorFormatHandlerRGBA8888,   .description="RGBA8888 format (RRRRRRRR GGGGGGGG BBBBBBBB AAAAAAAA)" },
+	{ .id="bgra8888",   .bit_depth=32, .function=colorFormatHandlerBGRA8888,   .description="BGRA8888 format (BBBBBBBB GGGGGGGG RRRRRRRR AAAAAAAA)" },
+	{ .id="xrgb8888",   .bit_depth=32, .function=colorFormatHandlerXRGB8888,   .description="XRGB8888 format (XXXXXXXX RRRRRRRR GGGGGGGG BBBBBBBB)" },
+	{ .id="xbgr8888",   .bit_depth=32, .function=colorFormatHandlerXBGR8888,   .description="XBGR8888 format (XXXXXXXX BBBBBBBB GGGGGGGG RRRRRRRR)" },
+	{ .id="rgbx8888",   .bit_depth=32, .function=colorFormatHandlerRGBX8888,   .description="RGBX8888 format (RRRRRRRR GGGGGGGG BBBBBBBB XXXXXXXX)" },
+	{ .id="bgrx8888",   .bit_depth=32, .function=colorFormatHandlerBGRX8888,   .description="BGRX8888 format (BBBBBBBB GGGGGGGG RRRRRRRR XXXXXXXX)" },
+};
+
+index_format_t all_index_formats[] = {
+	{ .id="i4be",       .bit_depth= 4, .function=indexFormatHandlerI4BE,       .description="4-bit index format, big-endian", },
+	{ .id="i4le",       .bit_depth= 4, .function=indexFormatHandlerI4LE,       .description="4-bit index format, little-endian", },
+	{ .id="i8",         .bit_depth= 8, .function=indexFormatHandlerI8,         .description="8-bit index format", },
+};
+
+block_format_t all_block_formats[] = {
+	{ .id="dxt1",       .bit_depth= 64, .width=4, .height=4, .function=blockFormatHandlerDXT1,    .description="DXT1 block format", },
+	{ .id="dxt5",       .bit_depth=128, .width=4, .height=4, .function=blockFormatHandlerDXT5,    .description="DXT5 block format", },
+
+	{ .id="gameboy",    .bit_depth=128, .width=8, .height=8, .function=blockFormatHandlerGameboy, .description="Game Boy 2-bit tile format" },
+	{ .id="nes",        .bit_depth=128, .width=8, .height=8, .function=blockFormatHandlerNES,     .description="NES 2-bit tile format" },
+};
+
+int const num_color_formats = array_size(all_color_formats);
+int const num_index_formats = array_size(all_index_formats);
+int const num_block_formats = array_size(all_block_formats);
+
+index_format_t const* findIndexFormat(char const* id) {
+	for (int i = 0; i < num_index_formats; ++i) {
+		if (strEqualIgnoreCaseAssumeAscii(all_index_formats[i].id, id)) {
+			return &all_index_formats[i];
+		}
+	}
+	return nullptr;
+}
+
+color_format_t const* findColorFormat(char const* id) {
+	for (int i = 0; i < num_color_formats; ++i) {
+		if (strEqualIgnoreCaseAssumeAscii(all_color_formats[i].id, id)) {
+			return &all_color_formats[i];
+		}
+	}
+	return nullptr;
+}
+
+block_format_t const* findBlockFormat(char const* id) {
+	for (int i = 0; i < num_block_formats; ++i) {
+		if (strEqualIgnoreCaseAssumeAscii(all_block_formats[i].id, id)) {
+			return &all_block_formats[i];
+		}
+	}
+	return nullptr;
+}
+
+color_format_t const* g_colorFormat = findColorFormat("l8");
+block_format_t const* g_blockFormat = nullptr;
+index_format_t const* g_indexFormat = nullptr;
 int g_width = 256;
 int g_tileWidth = 1;
 int g_tileHeight = 1;
-const char* g_outputPath = nullptr;
+char const * g_outputPath = nullptr;
 int g_start = 0;
 int g_paletteStart = 0;
 int g_length = -1;
@@ -28,20 +137,20 @@ char** g_argv;
 void parseCommandLine() {
 	while (1) {
 		static struct option long_options[] = {
-			{ "format",  required_argument, 0, 'f' },
-			{ "list-formats",  no_argument, 0, 'F' },
-			{ "tile",    required_argument, 0, 't' },
-			{ "width",   required_argument, 0, 'w' },
-			{ "output",  required_argument, 0, 'o' },
-			{ "start",   required_argument, 0, 's' },
-			{ "length",  required_argument, 0, 'n' },
-			{ "palette-format", required_argument, 0, 'p' },
-			{ "palette-start",  required_argument, 0, 'S' },
+			{ "format",        required_argument, 0, 'f' },
+			{ "list-formats",        no_argument, 0, 'F' },
+			{ "tile",          required_argument, 0, 't' },
+			{ "width",         required_argument, 0, 'w' },
+			{ "output",        required_argument, 0, 'o' },
+			{ "start",         required_argument, 0, 's' },
+			{ "length",        required_argument, 0, 'n' },
+			{ "index-format",  required_argument, 0, 'i' },
+			{ "palette-start", required_argument, 0, 'p' },
 			{ 0, 0, 0, 0 }
 		};
 
 		int option_index = 0;
-		int c = getopt_long(g_argc, g_argv, "f:Ft:w:o:s:n:p:S:", long_options, &option_index);
+		int c = getopt_long(g_argc, g_argv, "f:Ft:w:o:s:n:i:p:", long_options, &option_index);
 		
 		if (c == -1) {
 			break;
@@ -49,19 +158,23 @@ void parseCommandLine() {
 
 		switch (c) {
 			case 'f': {
-				const char* formatName = optarg;
-				g_format = getFormatFromName(formatName);
-				if (g_format == eFormat::INVALID) {
-					printf("Unknown format specified: %s\n", formatName);
-					exit(1);
+				char const* formatName = optarg;
+				g_blockFormat = nullptr;
+				g_colorFormat = findColorFormat(formatName);
+				if (!g_colorFormat) {
+					g_blockFormat = findBlockFormat(formatName);
+					if (!g_blockFormat) {
+						printf("Unknown format specified: %s\n", formatName);
+						exit(1);
+					}
 				}
 				break;
 			}
-			case 'p': {
-				const char* formatName = optarg;
-				g_paletteFormat = getFormatFromName(formatName);
-				if (g_paletteFormat == eFormat::INVALID) {
-					printf("Unknown palette format specified: %s\n", formatName);
+			case 'i': {
+				char const* formatName = optarg;
+				g_indexFormat = findIndexFormat(formatName);
+				if (!g_indexFormat) {
+					printf("Unknown index format specified: %s\n", formatName);
 					exit(1);
 				}
 				break;
@@ -95,7 +208,7 @@ void parseCommandLine() {
 				}
 				break;
 			}
-			case 'S': {
+			case 'p': {
 				g_paletteStart = strtol(optarg, nullptr, 10);
 				if (g_start < 0) {
 					printf("Palette start offset must be greater than or equal to zero.\n");
@@ -113,14 +226,17 @@ void parseCommandLine() {
 			}
 			case 'F': {
 				printf("Available formats:\n");
-				for (uint32_t f = 0; f < (uint32_t)eFormat::COUNT; ++f)
-				{
-					eFormat format = (eFormat)f;
-					printf(
-						"%s: \033[20G%s\n",
-						getNameFromFormat(format).c_str(),
-						createFormatHandler(format)->getDescription().c_str()
-					);
+				printf("- Color formats:\n");
+				for (int i=0;i<num_color_formats;++i) {
+					printf("  - %s\t\t(%s)\n", all_color_formats[i].id, all_color_formats[i].description);
+				}
+				printf("- Block formats:\n");
+				for (int i=0;i<num_block_formats;++i) {
+					printf("  - %s\t\t(%s)\n", all_block_formats[i].id, all_block_formats[i].description);
+				}
+				printf("- Index formats:\n");
+				for (int i=0;i<num_index_formats;++i) {
+					printf("  - %s\t\t(%s)\n", all_index_formats[i].id, all_index_formats[i].description);
 				}
 				exit(0);
 			}
@@ -130,166 +246,176 @@ void parseCommandLine() {
 
 void earlySanityCheck() {
 	if (optind >= g_argc) {
+		puts("Usage:");
+		puts("   file2img [options] <input file>");
+		puts("");
 		puts("Options:");
-		puts("   -F,--list-formats   Print a list of available formats");
-		puts("   -f,--format         Specify the pixel format (default: A8)");
-		puts("   -t,--tile           Specify the tile size (default: 1/disabled)");
-		puts("   -w,--width          Specify the target width (default: 256)");
-		puts("   -o,--output         Specify the output path (default: out.png)");
-		puts("   -s,--start          Specify the start offset (default: 0)");
-		puts("   -n,--length         Specify the input byte count (default: all of them)");
-		puts("   -p,--palette-format Specify the palette format (default: none)");
-		puts("   -S,--palette-start  Specify the palette start offset (default: 0)");
+		puts("   -F,--list-formats    Print a list of available formats");
+		puts("   -f,--format          Specify the color format (default: L8)");
+		puts("   -t,--tile            Specify the tile size (default: 1/disabled)");
+		puts("   -w,--width           Specify the target width (default: 256)");
+		puts("   -o,--output          Specify the output path (default: out.png)");
+		puts("   -s,--start           Specify the start offset (default: 0)");
+		puts("   -n,--length          Specify the input byte count (default: all of them)");
+		puts("   -i,--index-format    Specify the index map format (default: none)");
+		puts("   -p,--palette-start   Specify the palette start offset (default: 0)");
 		exit(0);
 	}
 	if (g_outputPath != nullptr && optind + 1 < g_argc) {
 		printf("Output path was specified along with multiple input files!\n");
 		exit(1);
 	}
-}
-
-void sanityCheckFormatPaletteCombination(
-	std::shared_ptr<const FormatHandler> formatHandler,
-	std::shared_ptr<const FormatHandler> paletteHandler)
-{
-	// if we don't have a palette handler then we're good
-	if (paletteHandler == nullptr)
-		return;
-
-	// don't allow block handlers for palette pixel formats
-	if (paletteHandler->getBlockWidth() != 1 || paletteHandler->getBlockHeight() != 1 || paletteHandler->getPaletteStride() == 0)
-	{
-		printf("Format %s cannot be used as a palette format.\n", getNameFromFormat(g_paletteFormat).c_str());
-		exit(1);
-	}
-
-	if (formatHandler->getDstPixelComp() > 1)
-	{
-		printf("Format %s cannot be used as an index format.\n", getNameFromFormat(g_format).c_str());
+	if (g_blockFormat && g_indexFormat) {
+		printf("Cannot use block format %s as a palette source.\n", g_blockFormat->id);
 		exit(1);
 	}
 }
 
-void processInputFile(const char* infile)
+int calculatePixelCount(int numSrcBytes, color_format_t const* colorFormat, index_format_t const* indexFormat, block_format_t const* blockFormat)
 {
-	FILE* fh = fopen(infile, "rb");
+	if (indexFormat) {
+		return (numSrcBytes * 8) / indexFormat->bit_depth;
+	} else if (blockFormat) {
+		return (numSrcBytes * 8 * blockFormat->width * blockFormat->height) / blockFormat->bit_depth;
+	} else {
+		return (numSrcBytes * 8) / colorFormat->bit_depth;
+	}
+}
+
+void applyTileLayout(rgba8888_t* buffer, int width, int height, int tileWidth, int tileHeight) {
+	if ((width % tileWidth) != 0) {
+		printf("Chosen layout must have a width divisible by %d.\n", tileWidth);
+		exit(1);
+	}
+	if ((height % tileHeight) != 0) {
+		printf("Chosen layout must have a height divisible by %d.\n", tileHeight);
+		exit(1);
+	}
+
+	// TODO: we could be clever and do this with a scratch buffer that's only one tile tall
+	int const numPixels = width * height;
+	int const bufferLength = numPixels;
+	rgba8888_t* scratch = new rgba8888_t[bufferLength];
+	{
+		for (int i = 0; i < numPixels; ++i) {
+			int const xinblock = i % tileWidth;
+			int const yinblock = (i / tileWidth) % tileHeight;
+			int const blockIndex = i / (tileWidth * tileHeight);
+			int const blockx = (blockIndex % (width /tileWidth)) * tileWidth;
+			int const blocky = (blockIndex / (width /tileWidth)) * tileHeight;
+			int const x = blockx + xinblock;
+			int const y = blocky + yinblock;
+			int const offset = y*width+x;
+			scratch[offset] = buffer[i];
+		}
+		
+		memcpy(buffer, scratch, (size_t)bufferLength * sizeof(rgba8888_t));
+	}
+	delete[] scratch;
+}
+
+void processInputFile(char const* inputFilePath)
+{
+	FILE* fh = fopen(inputFilePath, "rb");
 	{
 		if (!fh) {
-			printf("Failed to open file %s\n", infile);
+			printf("Failed to open %s\n", inputFilePath);
 			return;
 		}
 
-		fseek(fh, 0, SEEK_END);
-		size_t fileLength = ftell(fh);
-		fseek(fh, 0, SEEK_SET);
-
 		int srcLength = g_length;
+
 		if (srcLength < 0) {
-			// auto-detect data length
-			srcLength = fileLength - g_start;
+			// attempt to determine file length.
+			// this will fail for things like /dev/random.
+			fseek(fh, 0, SEEK_END);
+			size_t const fileLength = ftell(fh);
+			fseek(fh, 0, SEEK_SET);
+			
+			if (fileLength == 0) {
+				printf("Failed to automatically determine length of '%s', or it's an empty file.\n", inputFilePath);
+				printf("If this is some unbounded device like /dev/random, please specify an explicit length with -n\n");
+				exit(1);
+			}
+
+			srcLength = (fileLength - g_start);
 		}
 
-		// start is greater than file length or file is empty
-		if (srcLength <= 0) {
-			printf("No data available!\n");
-			exit(1);
-		}
-
-		if ((size_t)(g_start + srcLength) > fileLength) {
-			printf("Requested more data than is available.\n");
-			exit(1);
+		if (g_start != 0) {
+			fseek(fh, g_start, SEEK_SET);
 		}
 
 		uint8_t* srcBuffer = new uint8_t[srcLength];
-		if (srcLength > 0) {
-			fseek(fh, g_start, SEEK_SET);
-			fread(srcBuffer, 1, srcLength, fh);
+
+		size_t const totalBytesRead = fread(srcBuffer, 1, srcLength, fh);
+		if (totalBytesRead < (size_t)srcLength) {
+			printf("Failed to read requested %d bytes, only %lu bytes were available.\n", srcLength, totalBytesRead);
+			exit(1);
 		}
 
-		std::shared_ptr<const FormatHandler> format = createFormatHandler(g_format);
-		std::shared_ptr<const FormatHandler> paletteHandler = nullptr;
-		if (g_paletteFormat != eFormat::INVALID) {
-			paletteHandler = createFormatHandler(g_paletteFormat);
-		}
-		sanityCheckFormatPaletteCombination(format, paletteHandler);
-
-		int pixelCount = format->pixelCountFromSrcLength(srcLength);
+		int const pixelCount = calculatePixelCount(srcLength, g_colorFormat, g_indexFormat, g_blockFormat);
 
 		int width = g_width;
 		int height = (pixelCount + width - 1) / width;
 
-		// ensure this width is valid for block formats
-		if ((width % format->getBlockWidth()) != 0) {
-			printf("Requested format %s requires a width divisible by %d.\n", getNameFromFormat(g_format).c_str(), format->getBlockWidth());
-			exit(1);
+		if (g_blockFormat) {
+			// ensure this width is valid
+			if ((width % g_blockFormat->width) != 0) {
+				printf("Requested block format %s requires a width divisible by %d.\n", g_blockFormat->id, g_blockFormat->width);
+				exit(1);
+			}
+
+			// pad the height if necessary
+			height = alignToMultiple(height, g_blockFormat->height);
 		}
 
-		// pad the height if necessary for block formats
-		height = AlignToMultiple(height, format->getBlockHeight());
-
 		// handle tile size
-		if (g_tileWidth != 1 || g_tileHeight != 1)
-		{
-			if ((width % g_tileWidth) != 0)
-			{
+		if (g_tileWidth != 1 || g_tileHeight != 1) {
+			if ((width % g_tileWidth) != 0) {
 				printf("Width %d is not divisible by tile size %d.\n", width, g_tileWidth);
 				exit(1);
 			}
-			if ((height % g_tileHeight) != 0)
-			{
-				if (format->getBlockHeight() == 1)
-				{
-					height = AlignToMultiple(height, g_tileHeight);
-				}
-				else
-				{
-					printf("Format %s is not trivially compatible with tile height %d.\n", getNameFromFormat(g_format).c_str(), g_tileHeight);
+			if ((height % g_tileHeight) != 0) {
+				if (g_blockFormat) {
+					printf("Format %s is not trivially compatible with tile height %d.\n", g_blockFormat->id, g_tileHeight);
 					exit(1);
+				} else {
+					height = alignToMultiple(height, g_tileHeight);
 				}
 			}
 		}
 
-		int dstComp = format->getDstPixelComp();
-		int dstLength = width * height * dstComp;
-		uint8_t* dstBuffer = new uint8_t[dstLength];
-		memset(dstBuffer, 0, dstLength);
+		rgba8888_t* dstBuffer = new rgba8888_t[width * height];
+		memset(dstBuffer, 0, width * height * sizeof(rgba8888_t));
+		int const dstComp = 4;
 
-		format->process(srcBuffer, srcLength, dstBuffer, width);
-
-		if (g_tileWidth != 1 || g_tileHeight != 1)
-		{
-			Tile::process(dstBuffer, format->getDstPixelComp(), width, height, g_tileWidth, g_tileHeight);
-		}
-
-		if (paletteHandler != nullptr)
-		{
-			int paletteStride = paletteHandler->getPaletteStride();
-			uint8_t* paletteSrcBuffer = new uint8_t[256 * paletteStride];
+		if (g_indexFormat) {
+			int const numPaletteEntries = (1 << g_indexFormat->bit_depth);
+			int const paletteSizeBytes = (g_colorFormat->bit_depth * numPaletteEntries + 7) / 8;
+			uint8_t* paletteSrcBuffer = new uint8_t[paletteSizeBytes];
+			
 			fseek(fh, g_paletteStart, SEEK_SET);
-			fread(paletteSrcBuffer, paletteStride, 256, fh);
+			fread(paletteSrcBuffer, 1, paletteSizeBytes, fh);
 
-			int paletteComp = paletteHandler->getDstPixelComp();
-			uint8_t* dstBuffer2 = new uint8_t[width * height * paletteComp];
-			for (int y = 0; y < height; ++y)
-			{
-				for (int x = 0; x < width; ++x)
-				{
-					int index = dstBuffer[y*width*dstComp + x*dstComp];
-					paletteHandler->process(
-						paletteSrcBuffer + (index*paletteStride),
-						paletteStride,
-						dstBuffer2 + y*width*paletteComp + x*paletteComp,
-						1
-					);
-				}
+			rgba8888_t palette[numPaletteEntries];
+			g_colorFormat->function(palette, paletteSrcBuffer, paletteSizeBytes);
+			
+			int indexBuffer[width * height];
+			g_indexFormat->function(indexBuffer, srcBuffer, srcLength);
+
+			for (int i = 0; i != pixelCount; ++i) {
+				dstBuffer[i] = palette[indexBuffer[i]];
 			}
+		} else if (g_blockFormat) {
+			g_blockFormat->function(dstBuffer, srcBuffer, width, srcLength);
+		} else {
+			g_colorFormat->function(dstBuffer, srcBuffer, srcLength);
+		}
 
-			delete[] paletteSrcBuffer;
+		delete[] srcBuffer;
 
-			// yucky hack
-			dstComp = paletteComp;
-			delete[] dstBuffer;
-			dstBuffer = dstBuffer2;
+		if (g_tileWidth != 1 || g_tileHeight != 1) {
+			applyTileLayout(dstBuffer, width, height, g_tileWidth, g_tileHeight);
 		}
 
 		const char* filename = g_outputPath;
@@ -298,7 +424,6 @@ void processInputFile(const char* infile)
 		}
 		stbi_write_png(filename, width, height, dstComp, dstBuffer, width * dstComp);
 
-		delete[] srcBuffer;
 		delete[] dstBuffer;
 	}
 	fclose(fh);

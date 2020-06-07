@@ -1,0 +1,19 @@
+version: 2
+
+workflows:
+  version: 2
+  dist-compile:
+    jobs:
+      - build
+
+jobs:
+  build:
+    docker:
+      - image: gcc:8.2
+    steps:
+      - checkout
+      - run: git submodule init
+      - run: git submodule update --remote
+      - run: make
+      - run: ls -la
+      - run: ./file2img
