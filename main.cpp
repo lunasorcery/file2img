@@ -338,6 +338,10 @@ void processInputFile(char const* inputFilePath)
 				exit(1);
 			}
 
+			if (fileLength <= (size_t)g_start) {
+				printf("Requested start position %d is beyond the end of the available data (%lu bytes).\n", g_start, fileLength);
+				exit(1);
+			}
 			srcLength = (fileLength - g_start);
 		}
 
