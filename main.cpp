@@ -292,24 +292,25 @@ void applyTileLayout(rgba8888_t* buffer, int width, int height, int tileWidth, i
 		exit(1);
 	}
 
-	// TODO: we could be clever and do this with a scratch buffer that's only one tile tall
-	int const numPixels = width * height;
-	int const bufferLength = numPixels;
-	rgba8888_t* scratch = new rgba8888_t[bufferLength];
+	int const scratchPixelCount = width * tileHeight;
+	int const numTileRows = height / tileHeight;
+	rgba8888_t* scratch = new rgba8888_t[scratchPixelCount];
 	{
-		for (int i = 0; i < numPixels; ++i) {
-			int const xinblock = i % tileWidth;
-			int const yinblock = (i / tileWidth) % tileHeight;
-			int const blockIndex = i / (tileWidth * tileHeight);
-			int const blockx = (blockIndex % (width /tileWidth)) * tileWidth;
-			int const blocky = (blockIndex / (width /tileWidth)) * tileHeight;
-			int const x = blockx + xinblock;
-			int const y = blocky + yinblock;
-			int const offset = y*width+x;
-			scratch[offset] = buffer[i];
+		for (int tileRow = 0; tileRow < numTileRows; ++tileRow) {
+			for (int i = 0; i < scratchPixelCount; ++i) {
+				int const xinblock = i % tileWidth;
+				int const yinblock = (i / tileWidth) % tileHeight;
+				int const blockIndex = i / (tileWidth * tileHeight);
+				int const blockx = (blockIndex % (width /tileWidth)) * tileWidth;
+				int const blocky = (blockIndex / (width /tileWidth)) * tileHeight;
+				int const x = blockx + xinblock;
+				int const y = blocky + yinblock;
+				int const offset = y*width+x;
+				scratch[offset] = buffer[i+tileRow*scratchPixelCount];
+			}
+			
+			memcpy(buffer+tileRow*scratchPixelCount, scratch, (size_t)scratchPixelCount * sizeof(rgba8888_t));
 		}
-		
-		memcpy(buffer, scratch, (size_t)bufferLength * sizeof(rgba8888_t));
 	}
 	delete[] scratch;
 }
