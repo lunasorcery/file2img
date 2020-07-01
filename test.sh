@@ -1,6 +1,9 @@
 #!/bin/bash
 mkdir -p test-data
 
+# abort on failure
+set -e
+
 
 
 ##### generate test images #####

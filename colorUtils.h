@@ -86,7 +86,7 @@ inline rgba8888_t convertXBGR1555(uint16_t value) {
 }
 
 inline rgba8888_t convertARGB4444(uint16_t value) {
-	uint8_t const a = expand4(value >> 12);
+	uint8_t const a = expand4(value >> 13);
 	uint8_t const r = expand4((value >> 8) & 0xf);
 	uint8_t const g = expand4((value >> 4) & 0xf);
 	uint8_t const b = expand4(value & 0xf);
