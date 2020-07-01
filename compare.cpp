@@ -41,21 +41,26 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	image_t const imageTest(argv[1]);
+	char const* const pathTest = argv[1];
+	char const* const pathRef = argv[2];
+
+	image_t const imageTest(pathTest);
 
 	if (!imageTest.data)
 	{
-		fprintf(stderr, "Failed to open test image %s\n", argv[1]);
+		fprintf(stderr, "Failed to open test image %s\n", pathTest);
 		return 1;
 	}
 
-	image_t const imageRef(argv[2]);
+	image_t const imageRef(pathRef);
 
 	if (!imageRef.data)
 	{
-		fprintf(stderr, "Failed to open reference image %s\n", argv[2]);
+		fprintf(stderr, "Failed to open reference image %s\n", pathRef);
 		return 1;
 	}
+
+	printf("Comparing '%s' against '%s':\n", pathTest, pathRef);
 
 	if (imageTest.width != imageRef.width || imageTest.height != imageRef.height)
 	{
@@ -81,6 +86,8 @@ int main(int argc, char** argv)
 			return 1;
 		}
 	}
+
+	printf("Images are identical!\n");
 
 	return 0;
 }
