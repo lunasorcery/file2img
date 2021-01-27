@@ -1,4 +1,4 @@
-#include <cstring>
+#include <string.h>
 #include "colorFormatHandlers.h"
 #include "colorUtils.h"
 
@@ -6,8 +6,8 @@ void colorFormatHandlerL1BE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 	for (int i = numBytes; i-- != 0;) {
 		uint8_t const value = *src++;
 		for (int j = 0; j != 8; ++j) {
-			uint8_t a = ((value<<j)&0x80) ? 0xff : 0x00;
-			*dst++ = {a,a,a,0xff};
+			uint8_t const a = ((value<<j)&0x80) ? 0xff : 0x00;
+			*dst++ = (rgba8888_t){a,a,a,0xff};
 		}
 	}
 }
@@ -16,8 +16,8 @@ void colorFormatHandlerL1LE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 	for (int i = numBytes; i-- != 0;) {
 		uint8_t const value = *src++;
 		for (int j = 0; j != 8; ++j) {
-			uint8_t a = ((value>>j)&0x01) ? 0xff : 0x00;
-			*dst++ = {a,a,a,0xff};
+			uint8_t const a = ((value>>j)&0x01) ? 0xff : 0x00;
+			*dst++ = (rgba8888_t){a,a,a,0xff};
 		}
 	}
 }
@@ -29,10 +29,10 @@ void colorFormatHandlerL2BE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 		uint8_t const b = expand2((value >> 4) & 0x3);
 		uint8_t const c = expand2((value >> 2) & 0x3);
 		uint8_t const d = expand2(value & 0x3);
-		*dst++ = {a,a,a,0xff};
-		*dst++ = {b,b,b,0xff};
-		*dst++ = {c,c,c,0xff};
-		*dst++ = {d,d,d,0xff};
+		*dst++ = (rgba8888_t){a,a,a,0xff};
+		*dst++ = (rgba8888_t){b,b,b,0xff};
+		*dst++ = (rgba8888_t){c,c,c,0xff};
+		*dst++ = (rgba8888_t){d,d,d,0xff};
 	}
 }
 
@@ -43,10 +43,10 @@ void colorFormatHandlerL2LE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 		uint8_t const b = expand2((value >> 4) & 0x3);
 		uint8_t const c = expand2((value >> 2) & 0x3);
 		uint8_t const d = expand2(value & 0x3);
-		*dst++ = {d,d,d,0xff};
-		*dst++ = {c,c,c,0xff};
-		*dst++ = {b,b,b,0xff};
-		*dst++ = {a,a,a,0xff};
+		*dst++ = (rgba8888_t){d,d,d,0xff};
+		*dst++ = (rgba8888_t){c,c,c,0xff};
+		*dst++ = (rgba8888_t){b,b,b,0xff};
+		*dst++ = (rgba8888_t){a,a,a,0xff};
 	}
 }
 
@@ -55,8 +55,8 @@ void colorFormatHandlerL4BE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 		uint8_t const value = *src++;
 		uint8_t const hi = expand4(value >> 4);
 		uint8_t const lo = expand4(value & 0xf);
-		*dst++ = {hi,hi,hi,0xff};
-		*dst++ = {lo,lo,lo,0xff};
+		*dst++ = (rgba8888_t){hi,hi,hi,0xff};
+		*dst++ = (rgba8888_t){lo,lo,lo,0xff};
 	}
 }
 
@@ -65,14 +65,14 @@ void colorFormatHandlerL4LE(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 		uint8_t const value = *src++;
 		uint8_t const hi = expand4(value >> 4);
 		uint8_t const lo = expand4(value & 0xf);
-		*dst++ = {lo,lo,lo,0xff};
-		*dst++ = {hi,hi,hi,0xff};
+		*dst++ = (rgba8888_t){lo,lo,lo,0xff};
+		*dst++ = (rgba8888_t){hi,hi,hi,0xff};
 	}
 }
 
 void colorFormatHandlerL8(rgba8888_t* dst, uint8_t const* src, int numBytes) {
 	for (int i = numBytes; i-- != 0; ++dst, ++src) {
-		*dst = {*src,*src,*src,0xff};
+		*dst = (rgba8888_t){*src,*src,*src,0xff};
 	}
 }
 
@@ -179,7 +179,7 @@ void colorFormatHandlerRGB888(rgba8888_t* dst, uint8_t const* src, int numBytes)
 		uint8_t const r = *src++;
 		uint8_t const g = *src++;
 		uint8_t const b = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 3;
 	}
 }
@@ -189,7 +189,7 @@ void colorFormatHandlerBGR888(rgba8888_t* dst, uint8_t const* src, int numBytes)
 		uint8_t const b = *src++;
 		uint8_t const g = *src++;
 		uint8_t const r = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 3;
 	}
 }
@@ -200,7 +200,7 @@ void colorFormatHandlerARGB8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const r = *src++;
 		uint8_t const g = *src++;
 		uint8_t const b = *src++;
-		*dst++ = {r,g,b,a};
+		*dst++ = (rgba8888_t){r,g,b,a};
 		numBytes -= 4;
 	}
 }
@@ -211,7 +211,7 @@ void colorFormatHandlerABGR8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const b = *src++;
 		uint8_t const g = *src++;
 		uint8_t const r = *src++;
-		*dst++ = {r,g,b,a};
+		*dst++ = (rgba8888_t){r,g,b,a};
 		numBytes -= 4;
 	}
 }
@@ -228,7 +228,7 @@ void colorFormatHandlerBGRA8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const g = *src++;
 		uint8_t const r = *src++;
 		uint8_t const a = *src++;
-		*dst++ = {r,g,b,a};
+		*dst++ = (rgba8888_t){r,g,b,a};
 		numBytes -= 4;
 	}
 }
@@ -239,7 +239,7 @@ void colorFormatHandlerXRGB8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const r = *src++;
 		uint8_t const g = *src++;
 		uint8_t const b = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 4;
 	}
 }
@@ -250,7 +250,7 @@ void colorFormatHandlerXBGR8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const b = *src++;
 		uint8_t const g = *src++;
 		uint8_t const r = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 4;
 	}
 }
@@ -261,7 +261,7 @@ void colorFormatHandlerRGBX8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const g = *src++;
 		uint8_t const b = *src++;
 		++src; //uint8_t const x = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 4;
 	}
 }
@@ -272,7 +272,7 @@ void colorFormatHandlerBGRX8888(rgba8888_t* dst, uint8_t const* src, int numByte
 		uint8_t const g = *src++;
 		uint8_t const r = *src++;
 		++src; //uint8_t const x = *src++;
-		*dst++ = {r,g,b,0xff};
+		*dst++ = (rgba8888_t){r,g,b,0xff};
 		numBytes -= 4;
 	}
 }

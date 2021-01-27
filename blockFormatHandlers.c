@@ -1,9 +1,9 @@
-#include <cstring>
+#include <string.h>
 #include "blockFormatHandlers.h"
 #include "colorUtils.h"
 
 static rgba8888_t mix(rgba8888_t x, rgba8888_t y, int w0, int w1) {
-	return {
+	return (rgba8888_t){
 		(uint8_t)((x.r*w0 + y.r*w1)/(w0+w1)),
 		(uint8_t)((x.g*w0 + y.g*w1)/(w0+w1)),
 		(uint8_t)((x.b*w0 + y.b*w1)/(w0+w1)),
@@ -19,7 +19,7 @@ static void populateDXTColorTable(uint16_t c0, uint16_t c1, rgba8888_t* colorTab
 		colorTable[3] = mix(colorTable[0], colorTable[1], 1, 2);
 	} else {
 		colorTable[2] = mix(colorTable[0], colorTable[1], 1, 1);
-		colorTable[3] = {0,0,0,0};
+		colorTable[3] = (rgba8888_t){0,0,0,0};
 	}
 }
 
@@ -47,19 +47,19 @@ void blockFormatHandlerDXT1(rgba8888_t* dst, uint8_t const* src, int dstWidth, i
 	int blockCount = numBytes / 8;
 
 	for (int blockIndex = 0; blockIndex < blockCount; ++blockIndex) {
-		int blockX = (blockIndex % (dstWidth / 4)) * 4;
-		int blockY = (blockIndex / (dstWidth / 4)) * 4;
+		int const blockX = (blockIndex % (dstWidth / 4)) * 4;
+		int const blockY = (blockIndex / (dstWidth / 4)) * 4;
 
-		uint16_t c0 = readU16LE(&src);
-		uint16_t c1 = readU16LE(&src);
+		uint16_t const c0 = readU16LE(&src);
+		uint16_t const c1 = readU16LE(&src);
 		uint32_t indexTable = readU32LE(&src);
 
 		rgba8888_t colorTable[4];
 		populateDXTColorTable(c0, c1, colorTable);
 
 		for (int i = 0; i < 16; ++i) {
-			int x = blockX + (i % 4);
-			int y = blockY + (i / 4);
+			int const x = blockX + (i % 4);
+			int const y = blockY + (i / 4);
 
 			dst[y * dstWidth + x] = colorTable[indexTable & 0x3];
 			indexTable >>= 2;
@@ -91,7 +91,7 @@ void blockFormatHandlerDXT5(rgba8888_t* dst, uint8_t const* src, int dstWidth, i
 			int const x = blockX + (i % 4);
 			int const y = blockY + (i / 4);
 
-			dst[y*dstWidth+x] = {
+			dst[y*dstWidth+x] = (rgba8888_t){
 				colorTable[indexTable & 0x3].r,
 				colorTable[indexTable & 0x3].g,
 				colorTable[indexTable & 0x3].b,
@@ -117,7 +117,7 @@ void blockFormatHandlerGameboy(rgba8888_t* dst, uint8_t const* src, int dstWidth
 				uint8_t const val = expand2(((loBit>>(7-ix))&1) | (((hiBit>>(7-ix))&1)<<1));
 				int const x = blockX + ix;
 				int const y = blockY + iy;
-				dst[y*dstWidth+x] = {val,val,val,0xff};
+				dst[y*dstWidth+x] = (rgba8888_t){val,val,val,0xff};
 			}
 		}
 	}
@@ -138,7 +138,7 @@ void blockFormatHandlerNES(rgba8888_t* dst, uint8_t const* src, int dstWidth, in
 				uint8_t const val = expand2(((loBits[iy]>>(7-ix))&1) | (((hiBits[iy]>>(7-ix))&1)<<1));
 				int const x = blockX + ix;
 				int const y = blockY + iy;
-				dst[y*dstWidth+x] = {val,val,val,0xff};
+				dst[y*dstWidth+x] = (rgba8888_t){val,val,val,0xff};
 			}
 		}
 	}
