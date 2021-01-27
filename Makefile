@@ -29,3 +29,5 @@ uninstall:
 
 clean:
 	rm -f file2img
+
+.PHONY: all install uninstall clean
