@@ -1,5 +1,7 @@
 # file2img
 
+[![CircleCI](https://circleci.com/gh/lunasorcery/file2img.svg?style=svg)](https://circleci.com/gh/lunasorcery/file2img)
+
 **file2img** is a small utility that can interpret any binary file as image data, in a variety of pixel formats. It's useful for looking at file contents in a visual manner, and for extracting images from old games.
 
 ## How do I use it?
