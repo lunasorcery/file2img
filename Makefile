@@ -11,7 +11,7 @@ HEADERS = \
 	blockFormatHandlers.h \
 	colorFormatHandlers.h \
 	indexFormatHandlers.h \
-	stb/stb_image_write.h
+	stb_image_write.h
 
 
 CXX ?= clang
