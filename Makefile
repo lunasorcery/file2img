@@ -19,7 +19,7 @@ CC ?= clang
 all: file2img
 
 file2img: $(SOURCES) $(HEADERS)
-	$(CC) $(SOURCES) -std=c99 -lstdc++ -o file2img -Wall -Wextra -O3
+	$(CC) $(SOURCES) -std=c99 -o file2img -Wall -Wextra -O3
 
 install: file2img
 	cp file2img /usr/local/bin/file2img
