@@ -45,14 +45,14 @@ inline rgba8888_t convertRGB565(uint16_t value) {
 	uint8_t const r = expand5(value >> 11);
 	uint8_t const g = expand6((value >> 5) & 0x3f);
 	uint8_t const b = expand5(value & 0x1f);
-	return {r,g,b,0xff};
+	return (rgba8888_t){r,g,b,0xff};
 }
 
 inline rgba8888_t convertBGR565(uint16_t value) {
 	uint8_t const r = expand5(value & 0x1f);
 	uint8_t const g = expand6((value >> 5) & 0x3f);
 	uint8_t const b = expand5(value >> 11);
-	return {r,g,b,0xff};
+	return (rgba8888_t){r,g,b,0xff};
 }
 
 inline rgba8888_t convertARGB1555(uint16_t value) {
@@ -60,7 +60,7 @@ inline rgba8888_t convertARGB1555(uint16_t value) {
 	uint8_t const r = expand5((value >> 10) & 0x1f);
 	uint8_t const g = expand5((value >> 5) & 0x1f);
 	uint8_t const b = expand5(value & 0x1f);
-	return {r,g,b,a};
+	return (rgba8888_t){r,g,b,a};
 }
 
 inline rgba8888_t convertABGR1555(uint16_t value) {
@@ -68,21 +68,21 @@ inline rgba8888_t convertABGR1555(uint16_t value) {
 	uint8_t const r = expand5(value & 0x1f);
 	uint8_t const g = expand5((value >> 5) & 0x1f);
 	uint8_t const b = expand5((value >> 10) & 0x1f);
-	return {r,g,b,a};
+	return (rgba8888_t){r,g,b,a};
 }
 
 inline rgba8888_t convertXRGB1555(uint16_t value) {
 	uint8_t const r = expand5((value >> 10) & 0x1f);
 	uint8_t const g = expand5((value >> 5) & 0x1f);
 	uint8_t const b = expand5(value & 0x1f);
-	return {r,g,b,0xff};
+	return (rgba8888_t){r,g,b,0xff};
 }
 
 inline rgba8888_t convertXBGR1555(uint16_t value) {
 	uint8_t const r = expand5(value & 0x1f);
 	uint8_t const g = expand5((value >> 5) & 0x1f);
 	uint8_t const b = expand5((value >> 10) & 0x1f);
-	return {r,g,b,0xff};
+	return (rgba8888_t){r,g,b,0xff};
 }
 
 inline rgba8888_t convertARGB4444(uint16_t value) {
@@ -90,5 +90,5 @@ inline rgba8888_t convertARGB4444(uint16_t value) {
 	uint8_t const r = expand4((value >> 8) & 0xf);
 	uint8_t const g = expand4((value >> 4) & 0xf);
 	uint8_t const b = expand4(value & 0xf);
-	return {r,g,b,a};
+	return (rgba8888_t){r,g,b,a};
 }

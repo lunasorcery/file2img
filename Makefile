@@ -1,8 +1,8 @@
 SOURCES = \
-	main.cpp \
-	blockFormatHandlers.cpp \
-	colorFormatHandlers.cpp \
-	indexFormatHandlers.cpp
+	main.c \
+	blockFormatHandlers.c \
+	colorFormatHandlers.c \
+	indexFormatHandlers.c
 
 HEADERS = \
 	boilerplate.h \
@@ -14,12 +14,12 @@ HEADERS = \
 	stb_image_write.h
 
 
-CXX ?= clang
+CC ?= clang
 
 all: file2img
 
 file2img: $(SOURCES) $(HEADERS)
-	$(CXX) $(SOURCES) -std=c++2a -lstdc++ -o file2img -Wall -Wextra -O3
+	$(CC) $(SOURCES) -std=c99 -o file2img -Wall -Wextra -O3
 
 install: file2img
 	cp file2img /usr/local/bin/file2img

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
-struct rgba8888_t {
+typedef struct {
 	uint8_t r, g, b, a;
-};
+} rgba8888_t;
