@@ -1,0 +1,18 @@
+<svg width="400" height="280" xmlns="http://www.w3.org/2000/svg">
+	<rect fill="#fff" x="0" y="0" width="400" height="280" />
+
+	<rect fill="#def" x="80" y="20" width="300" height="40"/>
+	<rect fill="#edf" x="80" y="60" width="300" height="200"/>
+	<g stroke-width="1.5" stroke="#000" fill="none">
+		<rect x="80" y="20" width="300" height="240" />
+		<line x1="80" y1="60" x2="380" y2="60" />
+	</g>
+
+	<g font-family="sans-serif">
+		<text x="75" y="20" dominant-baseline="middle" text-anchor="end">0x0</text>
+		<text x="75" y="60" dominant-baseline="middle" text-anchor="end">0x200</text>
+		<text x="75" y="260" dominant-baseline="middle" text-anchor="end">0x12E00</text>
+		<text x="230" y="40" dominant-baseline="middle" text-anchor="middle">XBGR1555 palette, little-endian</text>
+		<text x="230" y="160" dominant-baseline="middle" text-anchor="middle">8-bit index map, 320x240 pixels</text>
+	</g>
+</svg>
