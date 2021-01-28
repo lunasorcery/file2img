@@ -21,7 +21,7 @@ On the maintainer's MacBook, running it on the file2img binary itself produces t
 
 ### Specifying width
 
-Depending on your use case, or the size of your input, you may want to look at the data with a different width. This is achieved with the `-w` flag.
+Depending on your use case, or the size of your input, you may want to look at the data with a different width. This is achieved with `--width` or `-w`.
 
 _Note: The width is specified in pixels, not bytes._
 
@@ -37,7 +37,7 @@ The above command will produce something like this:
 ### Specifying color formats
 
 By default, **file2img** will render each byte of the file as a single grayscale pixel, mapping the 0-255 range from black to white.
-You can render with a different color format using the `-f` flag, and you can get a list of all supported formats with `-F`.
+You can render with a different color format using `--format` or `-f`, and you can get a list of all supported formats with `--list-formats` or `-F`.
 
 _Note: Format names are case-insensitive, i.e. `RGB888` and `rgb888` will act the same._
 
@@ -54,7 +54,7 @@ The above command will map each pixel to three bytes of the input, treating them
 ### Specifying input ranges
 
 By default, **file2img** will attempt to read every byte of the specified file.
-If you're wanting to look at just a section of a file, this is done with the `-s` and `-n` flags.
+If you're wanting to look at just a section of a file, this is done with the `--start`/`-s` and `--length`/`-n` flags.
 
 ```sh
 file2img input.bin -s 128 -n 1024
@@ -66,7 +66,7 @@ The above command will only read 1024 bytes of the input, starting at an offset 
 ### Tiled pixel layouts
 
 Some older consoles and computers stored image data in small tiles, as opposed to standard raster order.
-**file2img** is able to account for data stored in this fashion, with the `-t` flag.
+**file2img** is able to account for data stored in this fashion, using `--tile` or `-t`.
 
 ```sh
 file2img input.bin -w 64 -t 8
@@ -85,7 +85,7 @@ _Note: the width must be a multiple of the tile size._
 
 ### Paletted data
 
-Certain older game platforms often used paletted data - where you'd have a small array of colors, with the image data consisting of indices into that array. With the use of the `-p` and `-i` flags, **file2img** is capable of handling these formats.
+Certain older game platforms often used paletted data - where you'd have a small array of colors, with the image data consisting of indices into that array. With the use of the `--palette-start`/`-p` and `--index-format`/`-i` flags, **file2img** is capable of handling these formats.
 
 Consider a hypothetical file with the following layout. We have a block of little-endian XBGR1555 palette data at address 0x0, and the image's index buffer is 512 bytes later at address 0x200. This layout is very similar to structures you might find in some Game Boy Advance ROMs.
 
@@ -94,18 +94,20 @@ Consider a hypothetical file with the following layout. We have a block of littl
 We can render this with the following command:
 
 ```sh
-file2img input.bin -f xbgr1555le -i i8 -p 0 -s $((0x200)) -w 320
+file2img input.bin  -f xbgr1555le  -i i8  -p 0  -s $((0x200))  -w 320
 ```
 
-We specify the _palette's_ color format with `-f`, and the _index map_'s format with `-i`, in this case `i8` for an 8-bit index. We specify the start addresses of the palette and index map with `-p` and `-s` respectively. Finally, we specify the width with `-w`.
+We specify the _palette's_ color format with `--format`/`-f`, and the _index map_'s format with `--index-format`/`-i`, in this case `i8` for an 8-bit index. We specify the start addresses of the palette and index map with `--palette-start`/`-p` and `--start`/`-s` respectively. Finally, we specify the width.
 
 _Note: Currently, **file2img** can only parse decimal numbers. The `$((hex))` syntax here is for bash to handle the conversion for us._
 
 
 ## Supported formats
 
+_Note: Formats marked with a `*` require a suffix of `BE` or `LE` to specify endianness - for example, BGR565LE for a little-endian BGR565 format._
+
 ### Color formats
-_These can only be used as inputs to the `-f` parameter._
+_These can only be used as inputs to the `--format`/`-f` parameter._
 
 * L1\* (1-bit luminance format)
 * L2\* (2-bit luminance format)
@@ -130,7 +132,7 @@ _These can only be used as inputs to the `-f` parameter._
 * BGRX8888
 
 ### Block formats
-_These can only be used as inputs to the `-f` parameter, and only when `-i` isn't in use._
+_These can only be used as inputs to the `--format`/`-f` parameter, and only when `--index-format`/`-i` isn't in use._
 
 * DXT1       (DXT1 block format)
 * DXT5       (DXT5 block format)
@@ -138,12 +140,10 @@ _These can only be used as inputs to the `-f` parameter, and only when `-i` isn'
 * NES        (NES 2-bit tile format)
 
 ### Index formats
-_These can only be used as inputs to the `-i` parameter._
+_These can only be used as inputs to the `--index-format`/`-i` parameter._
 
 * i4\*    (4-bit index format)
 * i8      (8-bit index format)
-
-\*: This supports big-endian and little-endian encodings with BE/LE suffixes.
 
 
 
