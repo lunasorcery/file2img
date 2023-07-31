@@ -414,6 +414,8 @@ void processInputFile(char const* inputFilePath)
 			for (int i = 0; i != pixelCount; ++i) {
 				dstBuffer[i] = palette[indexBuffer[i]];
 			}
+
+			DELETE(paletteSrcBuffer);
 		} else if (g_blockFormat) {
 			g_blockFormat->function(dstBuffer, srcBuffer, width, srcLength);
 		} else {
