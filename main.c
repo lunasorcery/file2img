@@ -269,6 +269,10 @@ void earlySanityCheck() {
 		eprintf("Cannot use block format %s as a palette source.\n", g_blockFormat->id);
 		exit(1);
 	}
+	if (g_indexFormat && !g_colorFormat) {
+		eprintf("Must specify color format (-f) when using index format (-i).\n");
+		exit(1);
+	}
 	if (!g_colorFormat && !g_blockFormat && !g_indexFormat) {
 		g_colorFormat = findColorFormat("l8");
 	}
